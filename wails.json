@@ -13,7 +13,7 @@
   "info": {
     "companyName": "Brew Manager",
     "productName": "Brew Manager",
-    "productVersion": "1.0.0",
+    "productVersion": "1.0.2",
     "copyright": "Copyright.........",
     "comments": "Homebrew 包管理器的图形化界面"
   },

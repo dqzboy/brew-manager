@@ -42,6 +42,10 @@ export function UninstallPackage(arg1, arg2) {
   return window['go']['main']['App']['UninstallPackage'](arg1, arg2);
 }
 
+export function UninstallPackageWithForce(arg1, arg2, arg3) {
+  return window['go']['main']['App']['UninstallPackageWithForce'](arg1, arg2, arg3);
+}
+
 export function UpdateAllPackages() {
   return window['go']['main']['App']['UpdateAllPackages']();
 }

@@ -31,9 +31,9 @@
           清理
         </button>
         <button class="btn btn-icon" @click="switchTab('settings')" :disabled="loading" title="设置">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
             <circle cx="12" cy="12" r="3"/>
-            <path d="M12 1v6m0 6v6m8.66-15.66l-4.24 4.24m-8.48 8.48l-4.24 4.24m16.97-1.99l-6-6m-6-6l-6-6m16.97 7.75h-6m-6 0h-6"/>
           </svg>
           设置
         </button>
@@ -79,9 +79,9 @@
         :class="{ active: currentTab === 'settings' }"
         @click="switchTab('settings')"
       >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
           <circle cx="12" cy="12" r="3"/>
-          <path d="M12 1v6m0 6v6"/>
         </svg>
         设置
       </button>
@@ -491,65 +491,128 @@
     </div>
 
     <!-- Operation Progress Modal -->
-    <transition name="modal">
-      <div v-if="operationModal.show" class="modal-overlay operation-overlay">
-        <div class="modal operation-modal" @click.stop>
-          <div class="operation-header">
-            <div class="operation-icon">
-              <div class="spinner-modern"></div>
+    <div v-for="operation in operationModals" :key="operation.id">
+      <transition name="modal">
+        <div v-if="operation.show && !operation.isMinimized" class="modal-overlay operation-overlay" @click.self="closeOperationModal(operation.id)">
+          <div class="modal operation-modal" @click.stop>
+            <div class="operation-header">
+              <div class="operation-icon">
+                <div v-if="!operation.isCompleted" class="spinner-modern"></div>
+                <svg v-else-if="operation.title === '操作完成'" class="icon-success" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 6L9 17l-5-5"/>
+                </svg>
+                <svg v-else class="icon-error" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path d="m15 9-6 6m0-6 6 6"/>
+                </svg>
+              </div>
+              <div class="operation-info">
+                <h3 class="operation-title">{{ operation.title }}</h3>
+                <p class="operation-subtitle">{{ operation.subtitle }}</p>
+              </div>
+              <button class="operation-minimize" @click="toggleOperationMinimize(operation.id)" title="最小化">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M19 12H5"/>
+                </svg>
+              </button>
+              <button class="operation-close" @click="closeOperationModal(operation.id)" title="关闭">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="m18 6-12 12M6 6l12 12"/>
+                </svg>
+              </button>
             </div>
-            <div class="operation-info">
-              <h3 class="operation-title">{{ operationModal.title }}</h3>
-              <p class="operation-subtitle">{{ operationModal.subtitle }}</p>
+            
+            <div v-if="!operation.isCompleted" class="operation-progress">
+              <div class="progress-bar-modern">
+                <div class="progress-bar-fill-modern"></div>
+              </div>
+            </div>
+
+            <div class="operation-logs">
+              <div class="logs-header">
+                <span class="logs-title">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <path d="M14 2v6h6M16 13H8m8 4H8m8 4H8"/>
+                  </svg>
+                  操作日志
+                </span>
+                <span class="logs-count">{{ operation.logs.length }} 条</span>
+              </div>
+              <div class="logs-content" ref="logsContainer">
+                <div v-if="operation.logs.length === 0" class="logs-empty">
+                  等待操作输出...
+                </div>
+                <div v-else>
+                  <div 
+                    v-for="(log, index) in operation.logs" 
+                    :key="index" 
+                    class="log-line"
+                    :class="log.type"
+                  >
+                    <span class="log-time">{{ log.time }}</span>
+                    <span class="log-text">{{ log.text }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="operation-footer" v-if="operation.canClose">
+              <button class="btn btn-primary" @click="closeOperationModal(operation.id)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 6L9 17l-5-5"/>
+                </svg>
+                完成
+              </button>
             </div>
           </div>
-          
-          <div class="operation-progress">
+        </div>
+      </transition>
+    </div>
+
+    <!-- Operation Toast (Minimized) - Multiple Support with stacking -->
+    <div class="operation-toasts-container">
+      <transition-group name="toast-list">
+        <div 
+          v-for="(operation, index) in operationModals.filter(op => op.show && op.isMinimized)" 
+          :key="operation.id" 
+          class="operation-toast"
+          :style="{ bottom: (24 + index * 90) + 'px' }"
+          @click="toggleOperationMinimize(operation.id)"
+        >
+          <div class="operation-header">
+            <div class="operation-icon">
+              <div v-if="!operation.isCompleted" class="spinner-modern"></div>
+              <svg v-else-if="operation.title === '操作完成'" class="icon-success" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M20 6L9 17l-5-5"/>
+              </svg>
+              <svg v-else class="icon-error" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="m15 9-6 6m0-6 6 6"/>
+              </svg>
+            </div>
+            <div class="operation-info">
+              <h3 class="operation-title">{{ operation.title }}</h3>
+              <p class="operation-subtitle">{{ operation.subtitle }}</p>
+            </div>
+            <button class="operation-close" @click.stop="closeOperationModal(operation.id)" title="关闭">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="m18 6-12 12M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+            
+          <div v-if="!operation.isCompleted" class="operation-progress">
             <div class="progress-bar-modern">
               <div class="progress-bar-fill-modern"></div>
             </div>
           </div>
-
-          <div class="operation-logs">
-            <div class="logs-header">
-              <span class="logs-title">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                  <path d="M14 2v6h6M16 13H8m8 4H8m8 4H8"/>
-                </svg>
-                操作日志
-              </span>
-              <span class="logs-count">{{ operationModal.logs.length }} 条</span>
-            </div>
-            <div class="logs-content" ref="logsContainer">
-              <div v-if="operationModal.logs.length === 0" class="logs-empty">
-                等待操作输出...
-              </div>
-              <div v-else>
-                <div 
-                  v-for="(log, index) in operationModal.logs" 
-                  :key="index" 
-                  class="log-line"
-                  :class="log.type"
-                >
-                  <span class="log-time">{{ log.time }}</span>
-                  <span class="log-text">{{ log.text }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="operation-footer" v-if="operationModal.canClose">
-            <button class="btn btn-primary" @click="closeOperationModal">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M20 6L9 17l-5-5"/>
-              </svg>
-              完成
-            </button>
+          <div v-if="operation.logs.length > 0" class="operation-latest-log">
+            {{ operation.logs[operation.logs.length - 1].text }}
           </div>
         </div>
-      </div>
-    </transition>
+      </transition-group>
+    </div>
 
     <!-- Footer -->
     <div class="footer">
@@ -702,7 +765,7 @@
 <script>
 import { ref, computed, onMounted } from 'vue'
 import { GetInstalledPackages, SearchPackages, InstallPackage, UninstallPackage, 
-         ReinstallPackage, UpdatePackage, UpdateAllPackages, UpdateBrew, 
+         UninstallPackageWithForce, ReinstallPackage, UpdatePackage, UpdateAllPackages, UpdateBrew, 
          CleanupBrew, GetOutdatedPackages, GetPackageInfo, GetBrewConfig, SetBrewMirror } from '../wailsjs/go/main/App'
 import { BrowserOpenURL } from '../wailsjs/runtime/runtime'
 
@@ -757,13 +820,8 @@ export default {
       onConfirm: null
     })
 
-    const operationModal = ref({
-      show: false,
-      title: '',
-      subtitle: '',
-      logs: [],
-      canClose: false
-    })
+    const operationModals = ref([])
+    const nextOperationId = ref(0)
 
     const logsContainer = ref(null)
 
@@ -839,48 +897,85 @@ export default {
     }
 
     const showOperationModal = (title, subtitle) => {
-      operationModal.value = {
+      const id = nextOperationId.value++
+      const newOperation = {
+        id,
         show: true,
         title,
         subtitle,
         logs: [],
-        canClose: false
+        canClose: false,
+        isCompleted: false,
+        isMinimized: false
       }
+      operationModals.value.push(newOperation)
+      return id
     }
 
-    const addOperationLog = (text, type = 'info') => {
+    const addOperationLog = (text, type = 'info', operationId = null) => {
       const now = new Date()
       const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`
       
-      operationModal.value.logs.push({
-        time,
-        text,
-        type
-      })
+      const operation = operationId !== null 
+        ? operationModals.value.find(op => op.id === operationId)
+        : operationModals.value[operationModals.value.length - 1]
+      
+      if (operation) {
+        operation.logs.push({
+          time,
+          text,
+          type
+        })
 
-      // 自动滚动到底部
-      setTimeout(() => {
-        if (logsContainer.value) {
-          logsContainer.value.scrollTop = logsContainer.value.scrollHeight
+        // 自动滚动到底部
+        setTimeout(() => {
+          if (logsContainer.value) {
+            logsContainer.value.scrollTop = logsContainer.value.scrollHeight
+          }
+        }, 10)
+      }
+    }
+
+    const closeOperationModal = (operationId) => {
+      const index = operationModals.value.findIndex(op => op.id === operationId)
+      if (index !== -1) {
+        operationModals.value.splice(index, 1)
+      }
+    }
+
+    const toggleOperationMinimize = (operationId) => {
+      const operation = operationModals.value.find(op => op.id === operationId)
+      if (operation) {
+        operation.isMinimized = !operation.isMinimized
+      }
+    }
+
+    const completeOperation = (success, message, operationId = null) => {
+      const operation = operationId !== null 
+        ? operationModals.value.find(op => op.id === operationId)
+        : operationModals.value[operationModals.value.length - 1]
+      
+      if (operation) {
+        operation.canClose = true
+        operation.isCompleted = true
+        if (success) {
+          operation.title = '操作完成'
+          operation.subtitle = message
+          addOperationLog('✓ ' + message, 'success', operation.id)
+        } else {
+          operation.title = '操作失败'
+          operation.subtitle = message
+          addOperationLog('✗ ' + message, 'error', operation.id)
         }
-      }, 10)
-    }
-
-    const closeOperationModal = () => {
-      operationModal.value.show = false
-      operationModal.value.logs = []
-    }
-
-    const completeOperation = (success, message) => {
-      operationModal.value.canClose = true
-      if (success) {
-        operationModal.value.title = '操作完成'
-        operationModal.value.subtitle = message
-        addOperationLog('✓ ' + message, 'success')
-      } else {
-        operationModal.value.title = '操作失败'
-        operationModal.value.subtitle = message
-        addOperationLog('✗ ' + message, 'error')
+        
+        // 如果是最小化模式，操作完成后3秒自动关闭
+        if (operation.isMinimized) {
+          setTimeout(() => {
+            if (operation.isCompleted && operation.isMinimized) {
+              closeOperationModal(operation.id)
+            }
+          }, 3000)
+        }
       }
     }
 
@@ -920,14 +1015,11 @@ export default {
     }
 
     const loadOutdatedPackages = async () => {
-      loading.value = true
-      loadingMessage.value = '正在检查可更新的软件包...'
       try {
         outdatedPackages.value = await GetOutdatedPackages()
       } catch (error) {
         showToast('加载可更新软件失败: ' + error, 'error')
       } finally {
-        loading.value = false
         // 加载完成后重新设置滚动监听
         setTimeout(() => {
           setupScrollListeners()
@@ -1044,7 +1136,11 @@ export default {
             }
           }
         } else {
-          completeOperation(false, result.message)
+          if (result.message.includes('另一个 Homebrew 进程正在运行')) {
+            completeOperation(false, result.message + '\n\n💡 提示：请等待其他 Homebrew 操作完成，或在终端执行 "killall brew" 结束所有 brew 进程后重试。')
+          } else {
+            completeOperation(false, result.message)
+          }
           showToast(result.message, 'error')
         }
       } catch (error) {
@@ -1062,16 +1158,22 @@ export default {
       )
     }
 
-    const uninstallPackage = async (pkg) => {
+    const uninstallPackage = async (pkg, force = false) => {
       showOperationModal('卸载软件包', `正在卸载 ${pkg.name}`)
       addOperationLog(`开始卸载 ${pkg.name} (${pkg.type})`)
       
       try {
-        addOperationLog('正在检查依赖关系...')
-        await new Promise(resolve => setTimeout(resolve, 300))
+        if (!force) {
+          addOperationLog('正在检查依赖关系...')
+          await new Promise(resolve => setTimeout(resolve, 300))
+        } else {
+          addOperationLog('正在强制卸载（忽略依赖）...')
+        }
         
         addOperationLog('正在执行卸载命令...')
-        const result = await UninstallPackage(pkg.name, pkg.type === 'cask')
+        const result = force 
+          ? await UninstallPackageWithForce(pkg.name, pkg.type === 'cask', true)
+          : await UninstallPackage(pkg.name, pkg.type === 'cask')
         
         if (result.output) {
           const lines = result.output.split('\n').filter(line => line.trim())
@@ -1090,8 +1192,23 @@ export default {
             }
           }
         } else {
-          completeOperation(false, result.message)
-          showToast(result.message, 'error')
+          // 检查是否是依赖冲突
+          if (result.message.includes('被其他软件依赖') && !force) {
+            closeOperationModal()
+            // 从输出中提取依赖信息
+            const dependencyMatch = result.output.match(/because it is required by ([^,]+)/)
+            const dependency = dependencyMatch ? dependencyMatch[1].trim() : '其他软件'
+            
+            showConfirmDialog(
+              '检测到依赖关系',
+              `${pkg.name} 被 ${dependency} 依赖。\n\n强制卸载可能会导致 ${dependency} 无法正常工作。\n\n是否强制卸载？`,
+              'danger',
+              () => uninstallPackage(pkg, true)
+            )
+          } else {
+            completeOperation(false, result.message)
+            showToast(result.message, 'error')
+          }
         }
       } catch (error) {
         completeOperation(false, '卸载失败: ' + error)
@@ -1132,7 +1249,11 @@ export default {
           showToast(result.message, 'success')
           await loadInstalledPackages()
         } else {
-          completeOperation(false, result.message)
+          if (result.message.includes('另一个 Homebrew 进程正在运行')) {
+            completeOperation(false, result.message + '\n\n💡 提示：请等待其他 Homebrew 操作完成，或在终端执行 "killall brew" 结束所有 brew 进程后重试。')
+          } else {
+            completeOperation(false, result.message)
+          }
           showToast(result.message, 'error')
         }
       } catch (error) {
@@ -1166,7 +1287,12 @@ export default {
           await loadInstalledPackages()
           await loadOutdatedPackages()
         } else {
-          completeOperation(false, result.message)
+          // 检查是否是锁文件冲突
+          if (result.message.includes('另一个 Homebrew 进程正在运行')) {
+            completeOperation(false, result.message + '\n\n💡 提示：请等待其他 Homebrew 操作完成，或在终端执行 "killall brew" 结束所有 brew 进程后重试。')
+          } else {
+            completeOperation(false, result.message)
+          }
           showToast(result.message, 'error')
         }
       } catch (error) {
@@ -1584,7 +1710,7 @@ export default {
       toast,
       modal,
       confirmDialog,
-      operationModal,
+      operationModals,
       updateDialog,
       logsContainer,
       switchTab,
@@ -1603,6 +1729,7 @@ export default {
       loadBrewSources,
       confirmSetMirror,
       closeOperationModal,
+      toggleOperationMinimize,
       setTheme,
       cycleTheme,
       scrollToTop,

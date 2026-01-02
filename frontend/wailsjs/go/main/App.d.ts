@@ -22,6 +22,8 @@ export function SetBrewMirror(arg1:string):Promise<main.OperationResult>;
 
 export function UninstallPackage(arg1:string,arg2:boolean):Promise<main.OperationResult>;
 
+export function UninstallPackageWithForce(arg1:string,arg2:boolean,arg3:boolean):Promise<main.OperationResult>;
+
 export function UpdateAllPackages():Promise<main.OperationResult>;
 
 export function UpdateBrew():Promise<main.OperationResult>;

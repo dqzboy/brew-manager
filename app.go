@@ -49,7 +49,13 @@ func (a *App) GetInstalledPackages() ([]Package, error) {
 	versionsOutput, err := a.execBrewCommand("list", "--versions")
 	if err == nil {
 		for _, line := range strings.Split(strings.TrimSpace(versionsOutput), "\n") {
-			if line == "" {
+			line = strings.TrimSpace(line)
+			// 跳过空行和错误信息
+			if line == "" ||
+				strings.HasPrefix(line, "Error:") ||
+				strings.Contains(line, "Cannot") ||
+				strings.Contains(line, "✓") ||
+				strings.Contains(line, "✗") {
 				continue
 			}
 			parts := strings.Fields(line)
@@ -63,7 +69,13 @@ func (a *App) GetInstalledPackages() ([]Package, error) {
 	formulae, err := a.execBrewCommand("list", "--formula")
 	if err == nil {
 		for _, name := range strings.Split(strings.TrimSpace(formulae), "\n") {
-			if name == "" {
+			name = strings.TrimSpace(name)
+			// 跳过空行和错误信息
+			if name == "" ||
+				strings.HasPrefix(name, "Error:") ||
+				strings.Contains(name, "Cannot") ||
+				strings.Contains(name, "✓") ||
+				strings.Contains(name, "✗") {
 				continue
 			}
 			version := allVersions[name]
@@ -84,7 +96,13 @@ func (a *App) GetInstalledPackages() ([]Package, error) {
 	casks, err := a.execBrewCommand("list", "--cask")
 	if err == nil {
 		for _, name := range strings.Split(strings.TrimSpace(casks), "\n") {
-			if name == "" {
+			name = strings.TrimSpace(name)
+			// 跳过空行和错误信息
+			if name == "" ||
+				strings.HasPrefix(name, "Error:") ||
+				strings.Contains(name, "Cannot") ||
+				strings.Contains(name, "✓") ||
+				strings.Contains(name, "✗") {
 				continue
 			}
 			version := allVersions[name]
@@ -111,8 +129,29 @@ func (a *App) SearchPackages(query string) ([]Package, error) {
 	}
 
 	packages := []Package{}
+	installedMap := make(map[string]bool)
 
-	// Search formulae
+	// 优化：并行获取已安装包列表，仅获取名称
+	installedOutput, err := a.execBrewCommand("list", "--formula", "-1")
+	if err == nil {
+		for _, name := range strings.Split(strings.TrimSpace(installedOutput), "\n") {
+			if name != "" {
+				installedMap[strings.TrimSpace(name)] = true
+			}
+		}
+	}
+
+	// 也检查已安装的 cask
+	installedCasks, err := a.execBrewCommand("list", "--cask", "-1")
+	if err == nil {
+		for _, name := range strings.Split(strings.TrimSpace(installedCasks), "\n") {
+			if name != "" {
+				installedMap[strings.TrimSpace(name)] = true
+			}
+		}
+	}
+
+	// Search formulae and casks
 	output, err := a.execBrewCommand("search", query)
 	if err != nil {
 		return nil, err
@@ -121,19 +160,23 @@ func (a *App) SearchPackages(query string) ([]Package, error) {
 	lines := strings.Split(strings.TrimSpace(output), "\n")
 	for _, line := range lines {
 		line = strings.TrimSpace(line)
-		if line == "" || strings.HasPrefix(line, "==>") {
+		// 跳过空行、标题行、错误信息和其他无效行
+		if line == "" ||
+			strings.HasPrefix(line, "==>") ||
+			strings.HasPrefix(line, "Error:") ||
+			strings.Contains(line, "Cannot") ||
+			strings.Contains(line, "exit") ||
+			strings.Contains(line, "[") ||
+			strings.Contains(line, "✓") ||
+			strings.Contains(line, "✗") {
 			continue
 		}
 
-		installed := a.isPackageInstalled(line)
-		desc := ""
-		if installed {
-			desc = a.getPackageDescription(line)
-		}
+		installed := installedMap[line]
 
 		packages = append(packages, Package{
 			Name:        line,
-			Description: desc,
+			Description: "", // 不预加载描述以提高速度
 			Type:        "formula",
 			Installed:   installed,
 		})
@@ -152,6 +195,14 @@ func (a *App) InstallPackage(name string, isCask bool) OperationResult {
 
 	output, err := a.execBrewCommand(args...)
 	if err != nil {
+		// 检查是否是锁文件冲突
+		if strings.Contains(output, "has already locked") || strings.Contains(output, "Please wait for it to finish") {
+			return OperationResult{
+				Success: false,
+				Message: "安装失败：另一个 Homebrew 进程正在运行，请稍后重试",
+				Output:  output,
+			}
+		}
 		return OperationResult{
 			Success: false,
 			Message: fmt.Sprintf("安装失败: %v", err),
@@ -168,14 +219,30 @@ func (a *App) InstallPackage(name string, isCask bool) OperationResult {
 
 // UninstallPackage uninstalls a package
 func (a *App) UninstallPackage(name string, isCask bool) OperationResult {
+	return a.UninstallPackageWithForce(name, isCask, false)
+}
+
+// UninstallPackageWithForce uninstalls a package with option to ignore dependencies
+func (a *App) UninstallPackageWithForce(name string, isCask bool, ignoreDependencies bool) OperationResult {
 	args := []string{"uninstall"}
 	if isCask {
 		args = append(args, "--cask")
+	}
+	if ignoreDependencies {
+		args = append(args, "--ignore-dependencies")
 	}
 	args = append(args, name)
 
 	output, err := a.execBrewCommand(args...)
 	if err != nil {
+		// 检查是否是依赖冲突
+		if strings.Contains(output, "Refusing to uninstall") && strings.Contains(output, "because it is required by") {
+			return OperationResult{
+				Success: false,
+				Message: "卸载失败：该软件被其他软件依赖",
+				Output:  output,
+			}
+		}
 		return OperationResult{
 			Success: false,
 			Message: fmt.Sprintf("卸载失败: %v", err),
@@ -200,6 +267,14 @@ func (a *App) ReinstallPackage(name string, isCask bool) OperationResult {
 
 	output, err := a.execBrewCommand(args...)
 	if err != nil {
+		// 检查是否是锁文件冲突
+		if strings.Contains(output, "has already locked") || strings.Contains(output, "Please wait for it to finish") {
+			return OperationResult{
+				Success: false,
+				Message: "重装失败：另一个 Homebrew 进程正在运行，请稍后重试",
+				Output:  output,
+			}
+		}
 		return OperationResult{
 			Success: false,
 			Message: fmt.Sprintf("重新安装失败: %v", err),
@@ -218,6 +293,14 @@ func (a *App) ReinstallPackage(name string, isCask bool) OperationResult {
 func (a *App) UpdatePackage(name string) OperationResult {
 	output, err := a.execBrewCommand("upgrade", name)
 	if err != nil {
+		// 检查是否是锁文件冲突
+		if strings.Contains(output, "has already locked") || strings.Contains(output, "Please wait for it to finish") {
+			return OperationResult{
+				Success: false,
+				Message: "更新失败：另一个 Homebrew 进程正在运行，请稍后重试",
+				Output:  output,
+			}
+		}
 		return OperationResult{
 			Success: false,
 			Message: fmt.Sprintf("更新失败: %v", err),
@@ -236,6 +319,14 @@ func (a *App) UpdatePackage(name string) OperationResult {
 func (a *App) UpdateAllPackages() OperationResult {
 	output, err := a.execBrewCommand("upgrade")
 	if err != nil {
+		// 检查是否是锁文件冲突
+		if strings.Contains(output, "has already locked") || strings.Contains(output, "Please wait for it to finish") {
+			return OperationResult{
+				Success: false,
+				Message: "更新失败：另一个 Homebrew 进程正在运行，请稍后重试",
+				Output:  output,
+			}
+		}
 		return OperationResult{
 			Success: false,
 			Message: fmt.Sprintf("更新全部失败: %v", err),
@@ -278,9 +369,19 @@ func (a *App) GetOutdatedPackages() ([]Package, error) {
 	packages := []Package{}
 	lines := strings.Split(strings.TrimSpace(output), "\n")
 	for _, line := range lines {
-		if line == "" {
+		line = strings.TrimSpace(line)
+		// 跳过空行、错误信息和其他无效行
+		if line == "" ||
+			strings.HasPrefix(line, "Error:") ||
+			strings.HasPrefix(line, "Warning:") ||
+			strings.Contains(line, "Cannot") ||
+			strings.Contains(line, "exit") ||
+			strings.Contains(line, "[") ||
+			strings.Contains(line, "✓") ||
+			strings.Contains(line, "✗") {
 			continue
 		}
+
 		parts := strings.Fields(line)
 		if len(parts) > 0 {
 			name := parts[0]

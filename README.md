@@ -50,34 +50,6 @@ wails build
 # 构建后的应用位于 build/bin/ 目录
 ```
 
-## 📖 使用说明
-
-### 已安装软件
-
-- 查看所有已安装的 Formulae 和 Cask 应用
-- 使用搜索框快速过滤
-- 对每个软件包可以：
-  - 查看详细信息
-  - 重新安装
-  - 卸载
-
-### 搜索软件
-
-- 输入关键词搜索 Homebrew 仓库
-- 查看搜索结果并直接安装
-- 显示软件是否已安装
-
-### 可更新软件
-
-- 查看所有有新版本的软件包
-- 单个更新或一键更新全部
-- 自动刷新已安装列表
-
-### 工具栏功能
-
-- **更新 Homebrew**：更新 Homebrew 本身到最新版本
-- **清理缓存**：清理旧版本文件和下载缓存
-
 
 ### Brew 命令封装
 
@@ -93,6 +65,36 @@ wails build
 - `brew cleanup` - 清理缓存
 - `brew info` - 查看软件详情
 
+
+## 💻 软件截图
+
+<br/>
+<table>
+    <tr>
+      <td width="50%" align="center"><b>已安装软件</b></td>
+      <td width="50%" align="center"><b>软件包更新</b></td>
+    </tr>
+    <tr>
+        <td width="50%" align="center"><img src="https://cdn.jsdelivr.net/gh/dqzboy/Images@main/picture/brewmanager01.png?raw=true"></td>
+        <td width="50%" align="center"><img src="https://cdn.jsdelivr.net/gh/dqzboy/Images@main/picture/brewmanager02.png?raw=true"></td>
+    </tr>
+    <tr>
+      <td width="50%" align="center"><b>软件搜索</b></td>
+      <td width="50%" align="center"><b>软件详情</b></td>
+    </tr>
+    <tr>
+        <td width="50%" align="center"><img src="https://cdn.jsdelivr.net/gh/dqzboy/Images@main/picture/brewmanager05.png?raw=true"></td>
+        <td width="50%" align="center"><img src="https://cdn.jsdelivr.net/gh/dqzboy/Images@main/picture/brewmanager06.png?raw=true"></td>
+    </tr>
+    <tr>
+      <td width="50%" align="center"><b>软件包更新</b></td>
+      <td width="50%" align="center"><b>软件包卸载</b></td>
+    </tr>
+    <tr>
+        <td width="50%" align="center"><img src="https://cdn.jsdelivr.net/gh/dqzboy/Images@main/picture/%E6%9B%B4%E6%96%B0.png?raw=true"></td>
+        <td width="50%" align="center"><img src="https://cdn.jsdelivr.net/gh/dqzboy/Images@main/picture/%E5%8D%B8%E8%BD%BD.png?raw=true"></td>
+    </tr>
+</table>
 
 ## 🤝 贡献
 

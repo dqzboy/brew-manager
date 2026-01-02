@@ -31,3 +31,11 @@ go.work.sum
 # .idea/
 # .vscode/
 frontend/node_modules
+build/bin/brew-manager.app/Contents/Info.plist
+.gitignore
+build/bin/brew-manager.app/Contents/MacOS/Brew Manager
+.gitignore
+.gitignore
+build/bin/brew-manager.app/Contents/Resources/iconfile.icns
+README.md
+build/bin/.DS_Store

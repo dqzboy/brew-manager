@@ -1318,7 +1318,177 @@ body {
   }
 }
 
-/* ==================== Operation Modal ==================== */
+/* ==================== Operation Toast (Right Bottom Notification) ==================== */
+.operation-toasts-container {
+  position: fixed;
+  right: 24px;
+  bottom: 0;
+  z-index: 10000;
+  pointer-events: none;
+}
+
+.operation-toast {
+  position: fixed;
+  right: 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  width: 380px;
+  max-width: calc(100vw - 48px);
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: auto;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.operation-toast:hover {
+  transform: translateX(-4px) scale(1.02);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(251, 133, 0, 0.3);
+  border-color: var(--primary-color);
+}
+
+.operation-toast .operation-header {
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(135deg, var(--background) 0%, var(--surface-light) 100%);
+  border-bottom: 1px solid var(--border);
+}
+
+.operation-toast .operation-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: var(--surface);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.operation-toast .spinner-modern {
+  width: 20px;
+  height: 20px;
+  border: 2.5px solid var(--surface-light);
+  border-top-color: var(--primary-color);
+  border-right-color: var(--secondary-color);
+  border-radius: 50%;
+  animation: spin-modern 1s linear infinite;
+}
+
+.operation-toast .icon-success {
+  color: #10b981;
+  filter: drop-shadow(0 0 4px rgba(16, 185, 129, 0.3));
+}
+
+.operation-toast .icon-error {
+  color: #ef4444;
+  filter: drop-shadow(0 0 4px rgba(239, 68, 68, 0.3));
+}
+
+.operation-toast .operation-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.operation-toast .operation-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 2px 0;
+  line-height: 1.3;
+}
+
+.operation-toast .operation-subtitle {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+
+.operation-toast .operation-close {
+  background: none;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.operation-toast .operation-close:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+  transform: rotate(90deg);
+}
+
+.operation-toast .operation-progress {
+  padding: 0 16px 10px;
+}
+
+.operation-toast .progress-bar-modern {
+  height: 3px;
+  background: var(--surface-light);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+
+.operation-toast .progress-bar-fill-modern {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+  border-radius: 2px;
+  animation: progress-wave 1.5s ease-in-out infinite;
+  width: 40%;
+  box-shadow: 0 0 8px rgba(251, 133, 0, 0.4);
+}
+
+.operation-toast .operation-latest-log {
+  padding: 10px 16px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  background: var(--background);
+  border-top: 1px solid var(--border);
+  font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.4;
+}
+
+/* Toast list animations */
+.toast-list-enter-active,
+.toast-list-leave-active {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.toast-list-enter-from {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+.toast-list-leave-to {
+  opacity: 0;
+  transform: translateX(100%) scale(0.8);
+}
+
+.toast-list-move {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ==================== Full Operation Modal ==================== */
 .operation-overlay {
   background: rgba(0, 0, 0, 0.85);
   backdrop-filter: blur(8px);
@@ -1331,16 +1501,20 @@ body {
   padding: 0;
 }
 
-.operation-header {
+.operation-modal .operation-header {
   padding: 24px;
   display: flex;
   align-items: center;
   gap: 20px;
   border-bottom: 1px solid var(--border);
+  background: var(--background);
 }
 
-.operation-icon {
+.operation-modal .operation-icon {
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .spinner-modern {
@@ -1353,33 +1527,58 @@ body {
   animation: spin-modern 1s linear infinite;
 }
 
-@keyframes spin-modern {
-  to { transform: rotate(360deg); }
+.operation-modal .icon-success {
+  color: #10b981;
 }
 
-.operation-info {
+.operation-modal .icon-error {
+  color: #ef4444;
+}
+
+.operation-modal .operation-info {
   flex: 1;
   min-width: 0;
 }
 
-.operation-title {
+.operation-modal .operation-title {
   font-size: 18px;
   font-weight: 600;
   color: var(--text-primary);
   margin-bottom: 4px;
 }
 
-.operation-subtitle {
+.operation-modal .operation-subtitle {
   font-size: 14px;
   color: var(--text-secondary);
   margin: 0;
 }
 
-.operation-progress {
+.operation-modal .operation-minimize,
+.operation-modal .operation-close {
+  background: none;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.operation-modal .operation-minimize:hover,
+.operation-modal .operation-close:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+.operation-modal .operation-progress {
   padding: 0 24px 16px;
 }
 
-.progress-bar-modern {
+.operation-modal .progress-bar-modern {
   height: 6px;
   background: var(--surface-light);
   border-radius: 3px;
@@ -1387,19 +1586,13 @@ body {
   position: relative;
 }
 
-.progress-bar-fill-modern {
+.operation-modal .progress-bar-fill-modern {
   height: 100%;
   background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
   border-radius: 3px;
   animation: progress-wave 1.5s ease-in-out infinite;
   width: 40%;
   box-shadow: 0 0 10px rgba(251, 133, 0, 0.5);
-}
-
-@keyframes progress-wave {
-  0% { transform: translateX(-100%); }
-  50% { transform: translateX(250%); }
-  100% { transform: translateX(250%); }
 }
 
 .operation-logs {
@@ -1478,6 +1671,33 @@ body {
   flex: 1;
   word-break: break-word;
 }
+
+.log-line.success .log-text {
+  color: #10b981;
+}
+
+.log-line.error .log-text {
+  color: #ef4444;
+}
+
+.operation-footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+  background: var(--surface-light);
+}
+
+@keyframes spin-modern {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes progress-wave {
+  0% { transform: translateX(-100%); }
+  50% { transform: translateX(250%); }
+  100% { transform: translateX(250%); }
+}
+
 
 .log-line.success .log-text {
   color: var(--success);
